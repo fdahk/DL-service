@@ -1,12 +1,54 @@
 {
   "pages": [
-    "pages/index/index"
+    "pages/index/index",
+    "pages/nearby/index",
+    "pages/market/index",
+    "pages/message/index",
+    "pages/user/index"
   ],
   "window": {
     "navigationBarTextStyle": "black",
-    "navigationBarTitleText": "uni-app",
+    "navigationBarTitleText": "DL-service",
     "navigationBarBackgroundColor": "#F8F8F8",
     "backgroundColor": "#F8F8F8"
+  },
+  "tabBar": {
+    "color": "#7A7E83",
+    "selectedColor": "#3cc51f",
+    "borderStyle": "black",
+    "backgroundColor": "#ffffff",
+    "list": [
+      {
+        "pagePath": "pages/index/index",
+        "iconPath": "static/iconPngs/home.png",
+        "selectedIconPath": "static/iconPngs/home.png",
+        "text": "首页"
+      },
+      {
+        "pagePath": "pages/nearby/index",
+        "iconPath": "static/iconPngs/address.png",
+        "selectedIconPath": "static/iconPngs/address.png",
+        "text": "附近"
+      },
+      {
+        "pagePath": "pages/market/index",
+        "iconPath": "static/iconPngs/xiangji.png",
+        "selectedIconPath": "static/iconPngs/xiangji.png",
+        "text": "拍卖"
+      },
+      {
+        "pagePath": "pages/message/index",
+        "iconPath": "static/iconPngs/all.png",
+        "selectedIconPath": "static/iconPngs/all.png",
+        "text": "消息"
+      },
+      {
+        "pagePath": "pages/user/index",
+        "iconPath": "static/iconPngs/user.png",
+        "selectedIconPath": "static/iconPngs/user.png",
+        "text": "我的"
+      }
+    ]
   },
   "usingComponents": {}
 }

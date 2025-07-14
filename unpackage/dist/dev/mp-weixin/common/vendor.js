@@ -2043,6 +2043,47 @@ function setCurrentRenderingInstance(instance) {
   instance && instance.type.__scopeId || null;
   return prev;
 }
+const COMPONENTS = "components";
+function resolveComponent(name, maybeSelfReference) {
+  return resolveAsset(COMPONENTS, name, true, maybeSelfReference) || name;
+}
+function resolveAsset(type, name, warnMissing = true, maybeSelfReference = false) {
+  const instance = currentRenderingInstance || currentInstance;
+  if (instance) {
+    const Component2 = instance.type;
+    if (type === COMPONENTS) {
+      const selfName = getComponentName(
+        Component2,
+        false
+      );
+      if (selfName && (selfName === name || selfName === camelize(name) || selfName === capitalize(camelize(name)))) {
+        return Component2;
+      }
+    }
+    const res = (
+      // local registration
+      // check instance[type] first which is resolved for options API
+      resolve(instance[type] || Component2[type], name) || // global registration
+      resolve(instance.appContext[type], name)
+    );
+    if (!res && maybeSelfReference) {
+      return Component2;
+    }
+    if (warnMissing && !res) {
+      const extra = type === COMPONENTS ? `
+If this is a native custom element, make sure to exclude it from component resolution via compilerOptions.isCustomElement.` : ``;
+      warn$1(`Failed to resolve ${type.slice(0, -1)}: ${name}${extra}`);
+    }
+    return res;
+  } else {
+    warn$1(
+      `resolve${capitalize(type.slice(0, -1))} can only be used in render() or setup().`
+    );
+  }
+}
+function resolve(registry, name) {
+  return registry && (registry[name] || registry[camelize(name)] || registry[capitalize(camelize(name))]);
+}
 const INITIAL_WATCHER_VALUE = {};
 function watch(source, cb, options) {
   if (!isFunction(cb)) {
@@ -4931,6 +4972,101 @@ function getCreateApp() {
     return my[method];
   }
 }
+function vOn(value, key) {
+  const instance = getCurrentInstance();
+  const ctx = instance.ctx;
+  const extraKey = typeof key !== "undefined" && (ctx.$mpPlatform === "mp-weixin" || ctx.$mpPlatform === "mp-qq" || ctx.$mpPlatform === "mp-xhs") && (isString(key) || typeof key === "number") ? "_" + key : "";
+  const name = "e" + instance.$ei++ + extraKey;
+  const mpInstance = ctx.$scope;
+  if (!value) {
+    delete mpInstance[name];
+    return name;
+  }
+  const existingInvoker = mpInstance[name];
+  if (existingInvoker) {
+    existingInvoker.value = value;
+  } else {
+    mpInstance[name] = createInvoker(value, instance);
+  }
+  return name;
+}
+function createInvoker(initialValue, instance) {
+  const invoker = (e2) => {
+    patchMPEvent(e2);
+    let args = [e2];
+    if (instance && instance.ctx.$getTriggerEventDetail) {
+      if (typeof e2.detail === "number") {
+        e2.detail = instance.ctx.$getTriggerEventDetail(e2.detail);
+      }
+    }
+    if (e2.detail && e2.detail.__args__) {
+      args = e2.detail.__args__;
+    }
+    const eventValue = invoker.value;
+    const invoke = () => callWithAsyncErrorHandling(patchStopImmediatePropagation(e2, eventValue), instance, 5, args);
+    const eventTarget = e2.target;
+    const eventSync = eventTarget ? eventTarget.dataset ? String(eventTarget.dataset.eventsync) === "true" : false : false;
+    if (bubbles.includes(e2.type) && !eventSync) {
+      setTimeout(invoke);
+    } else {
+      const res = invoke();
+      if (e2.type === "input" && (isArray(res) || isPromise(res))) {
+        return;
+      }
+      return res;
+    }
+  };
+  invoker.value = initialValue;
+  return invoker;
+}
+const bubbles = [
+  // touch事件暂不做延迟，否则在 Android 上会影响性能，比如一些拖拽跟手手势等
+  // 'touchstart',
+  // 'touchmove',
+  // 'touchcancel',
+  // 'touchend',
+  "tap",
+  "longpress",
+  "longtap",
+  "transitionend",
+  "animationstart",
+  "animationiteration",
+  "animationend",
+  "touchforcechange"
+];
+function patchMPEvent(event, instance) {
+  if (event.type && event.target) {
+    event.preventDefault = NOOP;
+    event.stopPropagation = NOOP;
+    event.stopImmediatePropagation = NOOP;
+    if (!hasOwn(event, "detail")) {
+      event.detail = {};
+    }
+    if (hasOwn(event, "markerId")) {
+      event.detail = typeof event.detail === "object" ? event.detail : {};
+      event.detail.markerId = event.markerId;
+    }
+    if (isPlainObject(event.detail) && hasOwn(event.detail, "checked") && !hasOwn(event.detail, "value")) {
+      event.detail.value = event.detail.checked;
+    }
+    if (isPlainObject(event.detail)) {
+      event.target = extend({}, event.target, event.detail);
+    }
+  }
+}
+function patchStopImmediatePropagation(e2, value) {
+  if (isArray(value)) {
+    const originalStop = e2.stopImmediatePropagation;
+    e2.stopImmediatePropagation = () => {
+      originalStop && originalStop.call(e2);
+      e2._stopped = true;
+    };
+    return value.map((fn) => (e3) => !e3._stopped && fn(e3));
+  } else {
+    return value;
+  }
+}
+const o = (value, key) => vOn(value, key);
 function createApp$1(rootComponent, rootProps = null) {
   rootComponent && (rootComponent.mpType = "app");
   return createVueApp(rootComponent, rootProps).use(plugin);
@@ -5252,8 +5388,8 @@ function promisify$1(name, fn) {
     if (hasCallback(args)) {
       return wrapperReturnValue(name, invokeApi(name, fn, args, rest));
     }
-    return wrapperReturnValue(name, handlePromise(new Promise((resolve, reject) => {
-      invokeApi(name, fn, extend(args, { success: resolve, fail: reject }), rest);
+    return wrapperReturnValue(name, handlePromise(new Promise((resolve2, reject) => {
+      invokeApi(name, fn, extend(args, { success: resolve2, fail: reject }), rest);
     })));
   };
 }
@@ -5574,7 +5710,7 @@ function invokeGetPushCidCallbacks(cid2, errMsg) {
   getPushCidCallbacks.length = 0;
 }
 const API_GET_PUSH_CLIENT_ID = "getPushClientId";
-const getPushClientId = defineAsyncApi(API_GET_PUSH_CLIENT_ID, (_, { resolve, reject }) => {
+const getPushClientId = defineAsyncApi(API_GET_PUSH_CLIENT_ID, (_, { resolve: resolve2, reject }) => {
   Promise.resolve().then(() => {
     if (typeof enabled === "undefined") {
       enabled = false;
@@ -5583,7 +5719,7 @@ const getPushClientId = defineAsyncApi(API_GET_PUSH_CLIENT_ID, (_, { resolve, re
     }
     getPushCidCallbacks.push((cid2, errMsg) => {
       if (cid2) {
-        resolve({ cid: cid2 });
+        resolve2({ cid: cid2 });
       } else {
         reject(errMsg);
       }
@@ -5652,9 +5788,9 @@ function promisify(name, api) {
     if (isFunction(options.success) || isFunction(options.fail) || isFunction(options.complete)) {
       return wrapperReturnValue(name, invokeApi(name, api, options, rest));
     }
-    return wrapperReturnValue(name, handlePromise(new Promise((resolve, reject) => {
+    return wrapperReturnValue(name, handlePromise(new Promise((resolve2, reject) => {
       invokeApi(name, api, extend({}, options, {
-        success: resolve,
+        success: resolve2,
         fail: reject
       }), rest);
     })));
@@ -6261,13 +6397,13 @@ function initRuntimeSocket(hosts, port, id) {
 }
 const SOCKET_TIMEOUT = 500;
 function tryConnectSocket(host2, port, id) {
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve2, reject) => {
     const socket = index.connectSocket({
       url: `ws://${host2}:${port}/${id}`,
       multiple: true,
       // 支付宝小程序 是否开启多实例
       fail() {
-        resolve(null);
+        resolve2(null);
       }
     });
     const timer = setTimeout(() => {
@@ -6275,19 +6411,19 @@ function tryConnectSocket(host2, port, id) {
         code: 1006,
         reason: "connect timeout"
       });
-      resolve(null);
+      resolve2(null);
     }, SOCKET_TIMEOUT);
     socket.onOpen((e) => {
       clearTimeout(timer);
-      resolve(socket);
+      resolve2(socket);
     });
     socket.onClose((e) => {
       clearTimeout(timer);
-      resolve(null);
+      resolve2(null);
     });
     socket.onError((e) => {
       clearTimeout(timer);
-      resolve(null);
+      resolve2(null);
     });
   });
 }
@@ -7701,4 +7837,6 @@ const createSubpackageApp = initCreateSubpackageApp();
 exports._export_sfc = _export_sfc;
 exports.createSSRApp = createSSRApp;
 exports.index = index;
+exports.o = o;
+exports.resolveComponent = resolveComponent;
 //# sourceMappingURL=../../.sourcemap/mp-weixin/common/vendor.js.map

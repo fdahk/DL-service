@@ -1,1 +1,1 @@
-<view class="content"><view class="text-area"><text class="title">Hello World</text></view></view>
+<view class="page"><nav u-i="2b25f5ea-0" bind:__l="__l"/><view class="content"><text>页面内容</text></view></view>
