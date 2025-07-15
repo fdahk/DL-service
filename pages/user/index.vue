@@ -1,4 +1,3 @@
-
 <template>
     <view class="user-page">
       <view class="header">
@@ -10,17 +9,11 @@
     </view>
   </template>
   
-  <script>
-  export default {
-    data() {
-      return {
-        
-      }
-    }
-  }
+  <script setup>
+
   </script>
   
-  <style>
+  <style lang="scss" scoped>
   .user-page {
     padding: 20px;
   }

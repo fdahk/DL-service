@@ -1,10 +1,10 @@
 {
   "pages": [
     "pages/index/index",
-    "pages/nearby/index",
-    "pages/market/index",
+    "pages/video/index",
     "pages/message/index",
-    "pages/user/index"
+    "pages/user/index",
+    "pages/search/index"
   ],
   "window": {
     "navigationBarTextStyle": "black",
@@ -14,39 +14,33 @@
   },
   "tabBar": {
     "color": "#7A7E83",
-    "selectedColor": "#3cc51f",
+    "selectedColor": "#fd1515",
     "borderStyle": "black",
     "backgroundColor": "#ffffff",
     "list": [
       {
         "pagePath": "pages/index/index",
-        "iconPath": "static/iconPngs/home.png",
-        "selectedIconPath": "static/iconPngs/home.png",
+        "iconPath": "static/pngs/shouye1.png",
+        "selectedIconPath": "static/pngs/shouye1.png",
         "text": "首页"
       },
       {
-        "pagePath": "pages/nearby/index",
-        "iconPath": "static/iconPngs/address.png",
-        "selectedIconPath": "static/iconPngs/address.png",
-        "text": "附近"
-      },
-      {
-        "pagePath": "pages/market/index",
-        "iconPath": "static/iconPngs/xiangji.png",
-        "selectedIconPath": "static/iconPngs/xiangji.png",
-        "text": "拍卖"
+        "pagePath": "pages/video/index",
+        "iconPath": "static/pngs/shipin.png",
+        "selectedIconPath": "static/pngs/shipin.png",
+        "text": "多多视频"
       },
       {
         "pagePath": "pages/message/index",
-        "iconPath": "static/iconPngs/all.png",
-        "selectedIconPath": "static/iconPngs/all.png",
-        "text": "消息"
+        "iconPath": "static/pngs/liaotian.png",
+        "selectedIconPath": "static/pngs/liaotian.png",
+        "text": "聊天"
       },
       {
         "pagePath": "pages/user/index",
-        "iconPath": "static/iconPngs/user.png",
-        "selectedIconPath": "static/iconPngs/user.png",
-        "text": "我的"
+        "iconPath": "static/pngs/gerenzhongxin.png",
+        "selectedIconPath": "static/pngs/gerenzhongxin.png",
+        "text": "个人中心"
       }
     ]
   },

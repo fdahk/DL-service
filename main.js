@@ -1,4 +1,5 @@
 import App from './App'
+import './static/icons/iconfont.css'
 
 // uni-app 独有的“条件编译指令， 用以实现多端适配
 // #ifndef VUE3

@@ -1,6 +1,8 @@
 {
   "navigationStyle": "custom",
   "usingComponents": {
-    "nav": "../../components/nav"
+    "uv-list": "../../uni_modules/uv-list/components/uv-list/uv-list",
+    "search-bar": "../../components/search",
+    "scroll-product-display": "../../components/scrollProductDisplay"
   }
 }

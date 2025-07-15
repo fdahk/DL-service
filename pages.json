@@ -1,4 +1,6 @@
 {
+	// 编译时会根据 pages.json 生成路由表和页面配置。只有在 pages.json 注册过的页面，才能被正确打包、生成、跳转和渲染
+	// 任何页面级组件都必须注册
 	"pages": [
 		{
 			"path": "pages/index/index",
@@ -7,27 +9,27 @@
 			}
 		},
 		{
-			"path": "pages/nearby/index",
+			"path": "pages/video/index",
 			"style": {
-				"navigationBarTitleText": "附近"
-			}
-		},
-		{
-			"path": "pages/market/index",
-			"style": {
-				"navigationBarTitleText": "拍卖"
+				"navigationBarTitleText": "多多视频"
 			}
 		},
 		{
 			"path": "pages/message/index",
 			"style": {
-				"navigationBarTitleText": "消息"
+				"navigationBarTitleText": "聊天"
 			}
 		},
 		{
 			"path": "pages/user/index",
 			"style": {
 				"navigationBarTitleText": "我的"
+			}
+		},
+		{
+			"path": "pages/search/index",
+			"style": {
+				"navigationStyle": "custom"
 			}
 		}
 	],
@@ -42,39 +44,33 @@
 	"uniIdRouter": {},
 	"tabBar": {
 		"color": "#7A7E83",
-		"selectedColor": "#3cc51f",
+		"selectedColor": "#fd1515",
 		"borderStyle": "black",
 		"backgroundColor": "#ffffff",
 		"list": [
 			{
 				"pagePath": "pages/index/index",
-				"iconPath": "static/iconPngs/home.png",
-				"selectedIconPath": "static/iconPngs/home.png",
+				"iconPath": "static/pngs/shouye1.png",
+				"selectedIconPath": "static/pngs/shouye1.png",
 				"text": "首页"
 			},
 			{
-				"pagePath": "pages/nearby/index",
-				"iconPath": "static/iconPngs/address.png",
-				"selectedIconPath": "static/iconPngs/address.png",
-				"text": "附近"
-			},
-			{
-				"pagePath": "pages/market/index",
-				"iconPath": "static/iconPngs/xiangji.png",
-				"selectedIconPath": "static/iconPngs/xiangji.png",
-				"text": "拍卖"
+				"pagePath": "pages/video/index",
+				"iconPath": "static/pngs/shipin.png",
+				"selectedIconPath": "static/pngs/shipin.png",
+				"text": "多多视频"
 			},
 			{
 				"pagePath": "pages/message/index",
-				"iconPath": "static/iconPngs/all.png",
-				"selectedIconPath": "static/iconPngs/all.png",
-				"text": "消息"
+				"iconPath": "static/pngs/liaotian.png",
+				"selectedIconPath": "static/pngs/liaotian.png",
+				"text": "聊天"
 			},
 			{
 				"pagePath": "pages/user/index",
-				"iconPath": "static/iconPngs/user.png",
-				"selectedIconPath": "static/iconPngs/user.png",
-				"text": "我的"
+				"iconPath": "static/pngs/gerenzhongxin.png",
+				"selectedIconPath": "static/pngs/gerenzhongxin.png",
+				"text": "个人中心"
 			}
 		]
 	}
