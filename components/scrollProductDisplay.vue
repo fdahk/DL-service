@@ -51,6 +51,7 @@
   border-radius: 12rpx;
   box-shadow: 0 2rpx 8rpx rgba(0,0,0,0.03);
   overflow: hidden;
+  margin-bottom: 10rpx;
 }
 
 .banner-left {

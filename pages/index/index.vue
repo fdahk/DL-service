@@ -22,17 +22,13 @@
 
 		<!-- body -->
 		<view class="content">
-			<!-- 横向商品展示 -->
-			<ScrollProductDisplay :brand="brand" :goodsList="goodsList" />
-			<!-- 横向商品展示2 -->
-			<ScrollProductDisplay :brand="brand2" :goodsList="goodsList2" />
 			<!-- 竖向商品展示(我靠，uvui没有虚拟列表) -->
-			<!-- 虚拟列表 -->
 			<view class="virtual-list-box">
+				<!-- 虚拟列表 -->
 				<VirtualList
 				ref="virtualListRef"
 				:data="listData"
-				:item-height="350"
+				:item-height="450"
 				:container-height="1200"
 				:buffer-size="8"  
 				:enable-refresh="true"
@@ -44,26 +40,32 @@
 				@scroll="handleScroll"
 				@itemClick="handleItemClick"
 				>
+				<!-- 顶部展示区域 -->
+				<template #topDispley1>
+					<ScrollProductDisplay :brand="brand" :goodsList="goodsList" />
+				</template>
+				<template #topDispley2>
+					<ScrollProductDisplay :brand="brand2" :goodsList="goodsList2" />
+				</template>
+
 				<!-- 作用域插槽 : 渲染若干个行item，构成渲染区域-->
 				<template #default="{ visibleItems, itemHeight, getItemKey }">
 					<view 
 						v-for="(item, index) in visibleItems" 
 						:key="getItemKey(item, index)"
-						class="virtual-item-row-box"
+						class="list-item-row"
 						:style="{ height: itemHeight + 'rpx' }"
 					>
-						<view class="list-item-row" @tap="handleItemClick(item, item.virtualIndex)">
-							<view class="list-item-col" v-for="(itemCol, colIndex) in [item[0], item[1]]" :key="colIndex">
-								<view class="item-img">
-									<image class="avatar" :src="itemCol.avatar" mode="aspectFill" />
-								</view>
-								<view class="item-title-box">
-									<view class="item-title">{{ itemCol.title }}</view>
-									<view class="item-desc">{{ itemCol.description }}</view>
-								</view>
-								<view class="item-price-box">
-									<text class="item-price">￥{{ itemCol.price }}</text>
-								</view>
+						<view class="list-item-col" 
+						v-for="(itemCol, colIndex) in [item[0], item[1]]" 
+						:key="colIndex" @tap="handleItemClick(itemCol, item.virtualIndex)">
+							<image class="item-img" :src="itemCol.avatar" mode="aspectFill" />
+							<view class="item-title-box">
+								<view class="item-title">{{ itemCol.title }}</view>
+								<view class="item-desc">{{ itemCol.description }}</view>
+							</view>
+							<view class="item-price-box">
+								<text class="item-price">￥{{ itemCol.price }}</text>
 							</view>
 						</view>
 					</view>
@@ -71,22 +73,26 @@
 				</VirtualList>
 			</view>
 			<!-- 操作按钮 -->
-			<view class="floating-buttons">
-			<view class="btn" @tap="scrollToTop">回到顶部</view>
-			<view class="btn" @tap="addMoreData">添加数据</view>
-			</view>
+			<FloatingButton v-show="computedScrollTop > 1500" :handleTap="scrollToTop" />
 		</view>
 	</view>
 </template>
 
 <script setup>
-	import { ref, onMounted } from 'vue'
+	import { ref, onMounted, computed } from 'vue'
 	import SearchBar from '../../components/search.vue'
 	import ScrollProductDisplay from '../../components/scrollProductDisplay.vue'
 	import VirtualList from '../../components/virtualList.vue'
+	import FloatingButton from '../../components/floatingButton.vue'
 	const statusBarHeight = ref(0)
 	const activeTab = ref(1)
 	const fixedTopHeight = ref(0)
+	// 计算属性，用于获取虚拟列表的滚动位置
+	// 注： 需要明确声明哪些数据是响应式的，尽管该值本身是实时更新的，但可能模板不存在响应式依赖，导致无法实时更新
+	const computedScrollTop = computed(() => {
+		// console.log(virtualListRef.value?.currentScrollTop) // 调试
+		return virtualListRef.value?.currentScrollTop
+	})
 	// 横向商品展示1
 	const brand = ref({
 		logo: '/static/pngs/baiyi.png',
@@ -145,7 +151,7 @@
 				id: index*2 + 1,
 				title: `商品标题 ${index*2 + 1}`,
 				description: `这是第 ${index*2 + 1} 个商品的详细描述，包含了丰富的信息内容`,
-				avatar: '/static/logo.png',
+				avatar: '/static/pngs/cxk.png',
 				price: (Math.random() * 1000 + 10).toFixed(2),
 				category: ['电子产品', '服装配饰', '家居用品', '运动户外', '图书音像'][index % 5]
 				},
@@ -153,7 +159,7 @@
 				id: index*2 + 2,
 				title: `商品标题 ${index*2 + 2}`,
 				description: `这是第 ${index*2 + 2} 个商品的详细描述，包含了丰富的信息内容`,
-				avatar: '/static/logo.png',
+				avatar: '/static/pngs/cxk.png',
 				price: (Math.random() * 1000 + 10).toFixed(2),
 				category: ['电子产品', '服装配饰', '家居用品', '运动户外', '图书音像'][index % 5]
 			}])
@@ -229,17 +235,6 @@
 	virtualListRef.value?.scrollToTop()
 	}
 
-	// 添加更多数据
-	const addMoreData = () => {
-		const newData = generateMockData(Date.now(), 20)
-		listData.value.unshift(...newData)
-		
-		uni.showToast({
-			title: '添加了20条数据',
-			icon: 'success'
-		})
-	}
-
 	// 处理滚动事件
 	const handleScroll = (scrollInfo) => {
 		// 可以在这里处理滚动相关逻辑
@@ -269,6 +264,7 @@
 		})
 		// 初始化数据
 		initData()
+		// console.log(virtualListRef.value.currentScrollTop) // 调试
 	})
 
 
@@ -360,96 +356,74 @@
 .virtual-list-box {
 	display: flex;
 	flex-direction: column;
-	gap: 10rpx;
 }
-.virtual-item-row-box {
-	display: flex;
-	flex-direction: column;
-	gap: 10rpx;
-}
+
 .list-item-row {
 	display: grid;
+	// Grid 中，网格项目（grid item）有一个默认的最小尺寸约束
+	// 设置了等分，但其并不会收缩子元素
 	grid-template-columns: repeat(2, 1fr);
 	gap: 10rpx;
+	margin-bottom: 10rpx;
 }
 .list-item-col {
   display: flex;
   flex-direction: column;
-  height: 350rpx;
+  height: 450rpx;
   align-items: center;
-  padding: 10rpx 10rpx;
   background-color: #fff;
   transition: background-color 0.2s ease;
-  
+  min-width: 0; // 防止内容溢出
   &:active {
     background-color: #f8f8f8;
   }
   
   .item-img {
-    
-    .avatar {
-      width: 100rpx;
-      height: 100rpx;
-      border-radius: 12rpx;
-      background-color: #f0f0f0;
-    }
+    width: 100%;
+	height: 350rpx;
+	background-color: #f0f0f0;
+
   }
   
   .item-title-box {
     display: flex;
 	width: 100%;
+	height: 50rpx;
 	justify-content: space-between;
 	align-items: center;
-    word-break: break-all;
+
     .item-title {
-      font-size: 28rpx;
-      color: $uni-text-color;
-      font-weight: 400;
-      margin-bottom: 8rpx;
-      // @include text-overflow;
+	width: 20%;
+	font-size: 24rpx;
+	color: $uni-text-color-grey;
+	white-space: nowrap;
+	overflow: hidden;
     }
     
     .item-desc {
-      font-size: 24rpx;
-      color: $uni-text-color-grey;
-      margin-bottom: 12rpx;
-      word-break: break-all;
-      // @include text-overflow-multi(2);
+	width: 70%;
+	font-size: 24rpx;
+	color: $uni-text-color-grey;
+	white-space: nowrap;
+	overflow: hidden;
     }
     
   }
   
   .item-price-box {
+	width: 100%;
+	flex: 1;
+	display: flex;
+	justify-content: flex-start;
+	align-items: center;
     .item-price {
-      font-size: 28rpx;
+      font-size: 34rpx;
       color: $uni-color-primary;
       font-weight: 400;
     }
   }
 }
-// 操作按钮
-.floating-buttons {
-  position: fixed;
-  right: 32rpx;
-  bottom: 100rpx;
-  z-index: 999;
-  
-  .btn {
-    background-color: $uni-color-primary;
-    color: white;
-    padding: 16rpx 24rpx;
-    border-radius: 50rpx;
-    font-size: 24rpx;
-    margin-bottom: 16rpx;
-    box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.15);
-    transition: all 0.3s ease;
-    
-    &:active {
-      transform: scale(0.95);
-      background-color: darken($uni-color-primary, 10%);
-    }
-  }
-}
+
 
 // 文本省略
 // @mixin text-overflow {

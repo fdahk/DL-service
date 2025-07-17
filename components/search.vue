@@ -31,7 +31,7 @@
     .search-icon {
       color: #999;
       margin-right: 16rpx;
-      font-size: 28rpx;
+    //   font-size: 28rpx;
     }
     
     .search-placeholder {
