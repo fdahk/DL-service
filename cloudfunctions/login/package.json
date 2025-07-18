@@ -1,0 +1,10 @@
+{
+    "name": "login",
+    "version": "1.0.0",
+    "main": "index.js",
+    // 解决云函数无法使用wx-server-sdk的问题
+    // 感谢微信开放社区的bro解答
+    "dependencies" :{
+        "wx-server-sdk":"*"
+    }
+}

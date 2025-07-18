@@ -39,6 +39,7 @@
 				@loadMore="handleLoadMore"
 				@scroll="handleScroll"
 				@itemClick="handleItemClick"
+				class="scroll-container"
 				>
 				<!-- 顶部展示区域 -->
 				<template #topDispley1>
@@ -255,6 +256,12 @@
 	}
 
 	onMounted(() => {
+		// 检查是否登录
+		const userInfo = uni.getStorageSync('userInfo')
+		if (!userInfo) {
+			// 未登录，跳转到登录页
+			uni.reLaunch({ url: '/pages/login/index' })
+		}		
 		uni.getSystemInfo({
 			success: (res) => {
 				statusBarHeight.value = (res.statusBarHeight || 44) * 2
@@ -283,8 +290,11 @@
 </script>
 
 <style lang="scss" scoped>
+
 .page {
-	height: 100vh;
+	min-height: 100vh;
+	display: flex;
+	flex-direction: column;
 }
 
 // 头部
@@ -349,6 +359,7 @@
 	display: flex;
 	flex-direction: column;
 	gap: 10rpx;
+	flex: 1;
 }
 
 
@@ -356,6 +367,15 @@
 .virtual-list-box {
 	display: flex;
 	flex-direction: column;
+	flex: 1;
+	background-color: transparent;
+}
+
+.scroll-container {
+position: relative;
+width: 100%;
+// height: 100vh;
+flex: 1;
 }
 
 .list-item-row {

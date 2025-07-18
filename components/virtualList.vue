@@ -19,14 +19,13 @@
         <!-- 滚动容器的高度等于“窗口高度 - 下拉刷新区域高度”，保证内容区始终可见。
         只要滚动条滚动，handleScroll 就会被触发，组件会重新计算哪些数据需要渲染。 -->
         <scroll-view
-            class="scroll-container"
             scroll-y
             :scroll-top="scrollViewTop"
             :enable-back-to-top="enableBackToTop"
             :refresher-enabled="false"
             @scroll="handleScroll"
             @scrolltolower="handleScrollToLower"
-            :style="{ height: scrollHeight + 'rpx' }"
+            :style="{ height: scrollHeight + 'px' }"
             ref="scrollViewRef"
         >
             <!-- 顶部展示区域(为了适配滚动，建议直接用插槽) -->
@@ -392,7 +391,6 @@ defineExpose({
   // getCurrentScrollTop: () => currentScrollTop.value,
   // currentScrollTop: currentScrollTop.value //错误暴露的是值，不是实时更新的
   currentScrollTop //正确暴露的是响应式引用，是实时更新的
-
 })
 
 // 监听数据变化
@@ -470,14 +468,16 @@ onMounted(() => {
 // }
 // }
 
-.scroll-container {
-position: relative;
-width: 100%;
-}
+// .scroll-container {
+// position: relative;
+// width: 100%;
+// height: 100%;
+// }
 
 .virtual-container {
 position: relative;
 width: 100%;
+height: 100%;
 }
 
 .placeholder-top,

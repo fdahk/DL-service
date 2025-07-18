@@ -23,11 +23,17 @@
 		{
 			"path": "pages/user/index",
 			"style": {
-				"navigationBarTitleText": "我的"
+				"navigationStyle": "custom"
 			}
 		},
 		{
 			"path": "pages/search/index",
+			"style": {
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/login/index",
 			"style": {
 				"navigationStyle": "custom"
 			}
