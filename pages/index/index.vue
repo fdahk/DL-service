@@ -2,7 +2,7 @@
 	<!-- 页面根容器  -->
 	<view class="page">
 		<!-- 顶部 -->
-		<view class="custom-navbar" :style="{ paddingTop: statusBarHeight + 'rpx' }">
+		<view class="custom-navbar" :style="{ paddingTop: navBarHeight + 'rpx' }">
 			<!-- 搜索框 -->
 			<view class="navbar-search-box">
 				<view class="navbar-search" @tap="handleSearchTap">
@@ -27,7 +27,7 @@
 				<!-- 虚拟列表 -->
 				<VirtualList
 				ref="virtualListRef"
-				:data="listData"
+				:data="listData[activeTab]"
 				:item-height="450"
 				:container-height="1200"
 				:buffer-size="8"  
@@ -51,22 +51,27 @@
 
 				<!-- 作用域插槽 : 渲染若干个行item，构成渲染区域-->
 				<template #default="{ visibleItems, itemHeight, getItemKey }">
+					<view v-if="visibleItems.length === 0">
+						<text>暂无数据</text>
+					</view>
 					<view 
+						v-else
 						v-for="(item, index) in visibleItems" 
 						:key="getItemKey(item, index)"
 						class="list-item-row"
 						:style="{ height: itemHeight + 'rpx' }"
 					>
 						<view class="list-item-col" 
-						v-for="(itemCol, colIndex) in [item[0], item[1]]" 
+						v-for="(itemCol, colIndex) in getValidItems(item)" 
 						:key="colIndex" @tap="handleItemClick(itemCol, item.virtualIndex)">
-							<image class="item-img" :src="itemCol.avatar" mode="aspectFill" />
+							<image class="item-img" :src="itemCol?.image[0]" mode="aspectFill" />
 							<view class="item-title-box">
-								<view class="item-title">{{ itemCol.title }}</view>
-								<view class="item-desc">{{ itemCol.description }}</view>
+								<view class="item-title">{{ itemCol?.title }}</view>
+								<view class="item-desc">{{ itemCol?.desc }}</view>
 							</view>
 							<view class="item-price-box">
-								<text class="item-price">￥{{ itemCol.price }}</text>
+								<text class="item-price">￥{{ itemCol?.price.toFixed(2) }}</text>
+								<text class="item-sales-count">已售：{{ itemCol?.salesCount }}</text>
 							</view>
 						</view>
 					</view>
@@ -85,9 +90,14 @@
 	import ScrollProductDisplay from '../../components/scrollProductDisplay.vue'
 	import VirtualList from '../../components/virtualList.vue'
 	import FloatingButton from '../../components/floatingButton.vue'
-	const statusBarHeight = ref(0)
+	const navBarHeight = uni.getWindowInfo().statusBarHeight + 44
 	const activeTab = ref(1)
 	const fixedTopHeight = ref(0)
+	// 虚拟列表
+	const virtualListRef = ref(null)
+	const listData = ref({})
+	const hasMore = ref(true)
+	const currentPage = ref(1)
 	// 计算属性，用于获取虚拟列表的滚动位置
 	// 注： 需要明确声明哪些数据是响应式的，尽管该值本身是实时更新的，但可能模板不存在响应式依赖，导致无法实时更新
 	const computedScrollTop = computed(() => {
@@ -118,9 +128,22 @@
 		{ id: 3, img: '/static/pngs/cgx.jpg', price: 1599 },
 		{ id: 4, img: '/static/pngs/cgx.jpg', price: 4657 }
 	])
-	const handleTabTap = (id) => {
-		activeTab.value = id
+	const handleTabTap = async (id) => {
+		// 先确保数据结构存在，避免 undefined
+		if (!listData.value[id]) {
+			listData.value[id] = []  // 设置为空数组而不是 undefined
+		}
+		
+		activeTab.value = id  // 再切换 tab
+		
+		// 如果没有数据才加载
+		if (listData.value[id].length === 0) {
+			await loadData()
+		} else {
+			currentPage.value = Math.ceil(listData.value[id].length / 20)
+		}
 	}
+	// tab列表
 	const tabList = ref([
 		{ id: 1, name: '首页' },
 		{ id: 2, name: '食品' },
@@ -134,91 +157,37 @@
 		{ id: 10, name: '电器' },
 		{ id: 11, name: '鞋包' },
 	])
-	// 虚拟列表
-	const virtualListRef = ref(null)
-	const listData = ref([])
-	const hasMore = ref(true)
-	const currentPage = ref(1)
 
-	// 生成模拟数据
-	const generateMockData = (page = 1, pageSize = 50) => {
-		const data = []
-		const start = (page - 1) * pageSize
-		
-		for (let i = 0; i < pageSize; i++) {
-			const index = start + i
-			data.push(
-				[{
-				id: index*2 + 1,
-				title: `商品标题 ${index*2 + 1}`,
-				description: `这是第 ${index*2 + 1} 个商品的详细描述，包含了丰富的信息内容`,
-				avatar: '/static/pngs/cxk.png',
-				price: (Math.random() * 1000 + 10).toFixed(2),
-				category: ['电子产品', '服装配饰', '家居用品', '运动户外', '图书音像'][index % 5]
-				},
-				{
-				id: index*2 + 2,
-				title: `商品标题 ${index*2 + 2}`,
-				description: `这是第 ${index*2 + 2} 个商品的详细描述，包含了丰富的信息内容`,
-				avatar: '/static/pngs/cxk.png',
-				price: (Math.random() * 1000 + 10).toFixed(2),
-				category: ['电子产品', '服装配饰', '家居用品', '运动户外', '图书音像'][index % 5]
-			}])
+	// 加载数据
+	const loadData = async () => {
+		const res = await wx.cloud.callFunction({
+			name: 'get',
+			data: {
+				skip: (currentPage.value - 1) * 20,
+				limit: 20,
+				category: tabList.value[activeTab.value - 1].name
+			}
+		})
+		// 防止undefined
+		if(!listData.value[activeTab.value]){
+			listData.value[activeTab.value] = []
 		}
-		
-		return data
-	}
-
-	// 初始化数据
-	const initData = () => {
-	listData.value = generateMockData(1, 100)
-	currentPage.value = 1
+		listData.value[activeTab.value] = [...listData.value[activeTab.value], ...res.result.data.reduce((acc, cur, idx) => {
+		if (idx % 2 === 0) {
+			acc.push(res.result.data.slice(idx, idx + 2));
+		}
+		return acc;
+		}, [])];
 	}
 
 	// 下拉刷新
 	const handleRefresh = async () => {
-		return new Promise((resolve) => {
-			setTimeout(() => {
-			// 重新加载数据
-			listData.value = generateMockData(1, 100)
-			currentPage.value = 1
-			hasMore.value = true
-			
-			uni.showToast({
-				title: '刷新成功',
-				icon: 'success'
-			})
-			
-			resolve()
-			}, 1500)
-		})
 	}
 
 	// 上拉加载更多
 	const handleLoadMore = async () => {
-		return new Promise((resolve) => {
-			setTimeout(() => {
-			currentPage.value++
-			const newData = generateMockData(currentPage.value, 50)
-			listData.value.push(...newData)
-			
-			// 模拟没有更多数据
-			if (listData.value.length >= 500) {
-				hasMore.value = false
-				uni.showToast({
-				title: '没有更多数据了',
-				icon: 'none'
-				})
-			} else {
-				uni.showToast({
-				title: `加载了 ${newData.length} 条数据`,
-				icon: 'none'
-				})
-			}
-			
-			resolve()
-			}, 1000)
-		})
+		currentPage.value++
+		await loadData()
 	}
 
 
@@ -255,23 +224,22 @@
 		// }
 	}
 
+	// 过滤有效数据的函数
+	const getValidItems = (item) => {
+	return [item?.[0], item?.[1]].filter(Boolean)
+	}
+
 	onMounted(() => {
-		// 检查是否登录
+		// 登录页跳转过来后再鉴定一下
 		const userInfo = uni.getStorageSync('userInfo')
 		if (!userInfo) {
 			// 未登录，跳转到登录页
 			uni.reLaunch({ url: '/pages/login/index' })
 		}		
-		uni.getSystemInfo({
-			success: (res) => {
-				statusBarHeight.value = (res.statusBarHeight || 44) * 2
-				// 固定顶部高度 = 状态栏高度 + 搜索框高度 + tab栏高度 + 间距
-				fixedTopHeight.value = statusBarHeight.value + 88 + 20 + 65 + 10
-			}
-		})
+		// 固定顶部高度 = 状态栏高度 + 搜索框高度 + tab栏高度 + 间距
+		fixedTopHeight.value = navBarHeight + 88 + 20 + 65 + 10
 		// 初始化数据
-		initData()
-		// console.log(virtualListRef.value.currentScrollTop) // 调试
+		loadData()
 	})
 
 
@@ -434,13 +402,17 @@ flex: 1;
 	width: 100%;
 	flex: 1;
 	display: flex;
-	justify-content: flex-start;
+	justify-content: space-between;
 	align-items: center;
     .item-price {
       font-size: 34rpx;
       color: $uni-color-primary;
       font-weight: 400;
     }
+	.item-sales-count {
+		font-size: 24rpx;
+		color: $uni-text-color-grey;
+	}
   }
 }
 

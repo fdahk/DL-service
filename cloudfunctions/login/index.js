@@ -3,14 +3,14 @@
 /* global exports */
 /* global require */
 const cloud = require('wx-server-sdk')
-cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV })
+cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV }) // 初始化云环境
 const db = cloud.database()
 
 exports.main = async (event, context) => {
-  const wxContext = cloud.getWXContext()
-  const openid = wxContext.OPENID
+  const wxContext = cloud.getWXContext() //获取微信调用上下文，包括 openid、appid 等信息
+  const openid = wxContext.OPENID //获取当前用户的 openid
 
-  // 获取前端传递的用户信息（可选）
+  // 获取前端传递的用户信息
   const { nickName, avatarUrl } = event
 
   // 查询用户是否已存在

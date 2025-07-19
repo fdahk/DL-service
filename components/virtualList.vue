@@ -143,10 +143,10 @@ const isRefreshing = ref(false)
 const isLoadingMore = ref(false)
 const refreshAreaHeight = ref(0)
 // 单位换算，任何函数获取的距离值都是px，需要换算成rpx
-const systemInfo = uni.getSystemInfoSync()
-const pxToRpx = 750 / systemInfo.windowWidth
+const windowInfo = uni.getWindowInfo()
+const pxToRpx = 750 / windowInfo.screenWidth
 
-// 增加一个标志，防止在编程式滚动时触发计算
+
 // 防循环机制：标志防止滚动事件触发重复计算
 const isProgrammaticScroll = ref(false)
 
@@ -237,6 +237,45 @@ const offsetBottom = computed(() => {
   return Math.max(0, remaining * props.itemHeight)
 })
 
+// 滚动到底部触发加载
+const handleScrollToLower = () => {
+  if (props.enableLoadMore && props.hasMore && !isLoadingMore.value) {
+    loadMore()
+  }
+}
+
+
+// 滚动到指定索引
+const scrollToIndex = (index) => {
+  if (index < 0 || index >= props.data.length) return
+  
+  const targetScrollTop = index * props.itemHeight
+  const maxScrollTop = Math.max(0, totalHeight.value - scrollHeight.value)
+  const safeScrollTop = Math.min(targetScrollTop, maxScrollTop)
+  
+  isProgrammaticScroll.value = true
+  scrollViewTop.value = safeScrollTop
+  currentScrollTop.value = safeScrollTop
+  
+  setTimeout(() => {
+    isProgrammaticScroll.value = false
+  }, 100)
+}
+
+// 滚动到指定位置
+const scrollTo = (targetScrollTop) => {
+  const maxScrollTop = Math.max(0, totalHeight.value - scrollHeight.value)
+  const safeScrollTop = Math.max(0, Math.min(targetScrollTop, maxScrollTop))
+  
+  isProgrammaticScroll.value = true
+  scrollViewTop.value = safeScrollTop
+  currentScrollTop.value = safeScrollTop
+  
+  setTimeout(() => {
+    isProgrammaticScroll.value = false
+  }, 100)
+}
+
 // 下拉刷新文本
 const refreshText = computed(() => {
   if (refreshAreaHeight.value < 100) {
@@ -308,13 +347,6 @@ const scrollToTop = () => {
   })
 }
 
-// 滚动到底部
-const handleScrollToLower = () => {
-  if (props.enableLoadMore && props.hasMore && !isLoadingMore.value) {
-    loadMore()
-  }
-}
-
 // 下拉刷新
 const refresh = async () => {
   if (isRefreshing.value) return
@@ -346,39 +378,6 @@ const loadMore = async () => {
   } finally {
     isLoadingMore.value = false
   }
-}
-
-
-
-// 滚动到指定索引
-const scrollToIndex = (index) => {
-  if (index < 0 || index >= props.data.length) return
-  
-  const targetScrollTop = index * props.itemHeight
-  const maxScrollTop = Math.max(0, totalHeight.value - scrollHeight.value)
-  const safeScrollTop = Math.min(targetScrollTop, maxScrollTop)
-  
-  isProgrammaticScroll.value = true
-  scrollViewTop.value = safeScrollTop
-  currentScrollTop.value = safeScrollTop
-  
-  setTimeout(() => {
-    isProgrammaticScroll.value = false
-  }, 100)
-}
-
-// 滚动到指定位置
-const scrollTo = (targetScrollTop) => {
-  const maxScrollTop = Math.max(0, totalHeight.value - scrollHeight.value)
-  const safeScrollTop = Math.max(0, Math.min(targetScrollTop, maxScrollTop))
-  
-  isProgrammaticScroll.value = true
-  scrollViewTop.value = safeScrollTop
-  currentScrollTop.value = safeScrollTop
-  
-  setTimeout(() => {
-    isProgrammaticScroll.value = false
-  }, 100)
 }
 
 // 暴露方法

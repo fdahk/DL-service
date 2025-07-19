@@ -60,7 +60,7 @@
 
 <script setup>
 const defaultAvatar = 'https://img.yzcdn.cn/vant/cat.jpeg'
-const navBarHeight = uni.getSystemInfoSync().statusBarHeight + 44
+const navBarHeight = uni.getWindowInfo().statusBarHeight + 44
 const userInfo = uni.getStorageSync('userInfo')
 
 

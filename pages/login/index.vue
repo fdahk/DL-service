@@ -1,25 +1,55 @@
 <template>
 <view class="user-page">
     <!-- header -->
-    <view class="header" :style="{ marginTop: navBarHeight + 'rpx' }">
-    <text class="title">登录</text>
+    <view class="header" :style="{ height: navBarHeight + 'px' }">
+    <text>登录</text>
     </view>
     <!-- body -->
     <view class="content">
-    <button v-if="!userInfo" open-type="getUserInfo" @getuserinfo="onGetUserInfo">微信一键登录</button>
-    <view v-else>
-        <image :src="userInfo.avatarUrl" style="width:80rpx;height:80rpx;border-radius:50%;" />
-        <text>{{ userInfo.nickName || '微信用户' }}</text>
-        <text>openid: {{ userInfo.openid }}</text>
-    </view>
+      <!-- 旧版写法：不支持授权弹窗 -->
+      <!-- <button v-if="!userInfo" open-type="getUserInfo" @getuserinfo="handleGetUserInfo">微信一键登录</button> -->
+      <button v-if="!userInfo"  @tap="handleGetUserInfo">微信一键登录</button>
+      <view v-else>
+          <image :src="userInfo.avatarUrl" style="width:80rpx;height:80rpx;border-radius:50%;" />
+          <text>{{ userInfo.nickName || '微信用户' }}</text>
+          <text>openid: {{ userInfo.openid }}</text>
+      </view>
     </view>
 </view>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue'
-const navBarHeight = uni.getSystemInfoSync().statusBarHeight + 44
+const navBarHeight = uni.getWindowInfo().statusBarHeight + 44
 const userInfo = ref(null)
+
+
+const handleGetUserInfo = async () => {
+  wx.getUserProfile({
+    desc: '用于完善会员资料',
+    success: async (res) => {
+
+      //存到数据库
+      await wx.cloud.callFunction({
+        name: 'login',
+        data: {
+          nickName: res.userInfo.nickName,
+          avatarUrl: res.userInfo.avatarUrl
+        }
+      })
+      // console.log(res.userInfo)
+      uni.setStorageSync('userInfo', res.userInfo)
+      uni.showToast({ title: '登录成功', icon: 'success' })
+      // 登录成功后跳转
+      setTimeout(() => {
+        uni.reLaunch({ url: '/pages/index/index' })
+      }, 800)      
+    },
+    fail: () => {
+      uni.showToast({ title: '用户拒绝授权', icon: 'none' })
+    }
+  })
+}
 
 onMounted(() => {
   const localUser = uni.getStorageSync('userInfo')
@@ -28,42 +58,32 @@ onMounted(() => {
     uni.reLaunch({ url: '/pages/index/index' })
   }
 })
-
-const onGetUserInfo = async (e) => {
-  const { userInfo: wxUserInfo } = e.detail
-  if (!wxUserInfo) {
-    uni.showToast({ title: '请授权登录', icon: 'none' })
-    return
-  }
-  try {
-    const res = await wx.cloud.callFunction({
-      name: 'login',
-      data: {
-        nickName: wxUserInfo.nickName,
-        avatarUrl: wxUserInfo.avatarUrl
-      }
-    })
-    if (res.result.code === 0) {
-      userInfo.value = res.result.data
-      uni.setStorageSync('userInfo', res.result.data)
-      uni.showToast({ title: '登录成功', icon: 'success' })
-      // 登录成功后跳转
-      setTimeout(() => {
-        uni.reLaunch({ url: '/pages/index/index' })
-      }, 800)
-    } else {
-      uni.showToast({ title: '登录失败', icon: 'none' })
-    }
-  } catch (err) {
-    console.error('云函数异常:', err)
-    uni.showToast({ title: '云函数异常', icon: 'none' })
-  }
-}
 </script>
 
 <style lang="scss" scoped>
-.user-page {}
-.header { text-align: center; }
-.title {}
-.content { text-align: center; }
+.user-page {
+  height: 100vh;
+  display: flex; 
+  align-items: center;
+  justify-self: center;
+}
+.header { 
+position: fixed;  
+top: 0;
+left: 0;
+right: 0;
+display: flex;
+flex-direction: column;
+align-items: center;
+// justify-content: end; 新规范，兼容性差，傻逼小程序的老浏览器，这个都不支持
+justify-content: flex-end;
+}
+
+.content { 
+display: flex;
+flex-direction: column;
+width: 100%;
+align-items: center;
+justify-content: center;
+}
 </style>

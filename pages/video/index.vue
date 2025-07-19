@@ -1,6 +1,6 @@
 <template>
     <view>
-        <text>拍卖</text>
+        <text>多多视频</text>
     </view>
 </template>
 
