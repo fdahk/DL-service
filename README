@@ -13,3 +13,18 @@
             原因：v-for 遍历时按照数量创建模板，即使其中有元素是undefined
             ps: 可选链是vue3的语法，vue2不支持，item?.[1]返回undefined
             解决：过滤数据形成新数组，避免渲染无效数据
+        3.注：:src="item" 而非 :src={item}
+        4.:style="{height: statusBarHeight + 'px'}" 记得加单位
+        5.:second='"极速退款"' 字符串需要加引号
+        6.uniapp规定：pages下不能乱放文件
+        7.双标签、自闭合标签：双标签需处理插槽，不用插槽的话自闭合性能更高 
+        8.富样式文本：
+            1.基线对齐：align-items: baseline
+            2.text包裹：作为文本流
+        9.v-show原理: <!-- 等价于 -->
+            <view style="display: none;">内容</view>
+            <view style="display: block;">内容</view>
+            bug：CSS 中的 flex 覆盖了v-show 的 display: none，导致v-show失效
+            ps：一般不会出现这个情况的原因：一般不在某组件的根元素上使用flex
+        10.flex元素的主轴大小由父元素决定
+        11. activeTab.value = computed() 和 const activeTab = computed()  后者正确

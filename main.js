@@ -21,6 +21,8 @@ app.$mount()
 
 // #ifdef VUE3
 import { createSSRApp } from 'vue'  // 引入 Vue 3 的 SSR 应用创建函数
+import { createPinia } from 'pinia'
+const pinia = createPinia()
 // #ifdef MP-WEIXIN
 wx.cloud.init({
   // env: '你的云开发环境ID', // 已配置
@@ -28,7 +30,8 @@ wx.cloud.init({
 })
 // #endif
 export function createApp() {       
-  const app = createSSRApp(App)     // 创建支持服务端渲染的 Vue 3 应用
+  const app = createSSRApp(App) // 创建支持服务端渲染的 Vue 3 应用
+  app.use(pinia)     
   return {                         // 注：仅返回应用实例，uni-app 框架会自动处理挂载流程
     app
   }

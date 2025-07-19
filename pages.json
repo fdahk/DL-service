@@ -37,6 +37,12 @@
 			"style": {
 				"navigationStyle": "custom"
 			}
+		},
+		{
+			"path": "pages/goodsDetail/index",
+			"style": {
+				"navigationStyle": "custom"
+			}
 		}
 	],
 	// 全局样式配置

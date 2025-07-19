@@ -90,6 +90,8 @@
 	import ScrollProductDisplay from '../../components/scrollProductDisplay.vue'
 	import VirtualList from '../../components/virtualList.vue'
 	import FloatingButton from '../../components/floatingButton.vue'
+	import { useGoodsStore } from '../../store/goodsStore'
+	const goodsStore = useGoodsStore()
 	const navBarHeight = uni.getWindowInfo().statusBarHeight + 44
 	const activeTab = ref(1)
 	const fixedTopHeight = ref(0)
@@ -192,12 +194,9 @@
 
 
 	// 点击列表项
-	const handleItemClick = (item, index) => {
-		uni.showModal({
-			title: '点击提示',
-			content: `你点击了第 ${index + 1} 项：${item.title}`,
-			showCancel: false
-		})
+	const handleItemClick = (item) => {
+		goodsStore.setCurrentGoods(item)
+		uni.navigateTo({url: '/pages/goodsDetail/index'})
 	}
 
 	// 回到顶部
