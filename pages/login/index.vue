@@ -28,16 +28,17 @@ const handleGetUserInfo = async () => {
   wx.getUserProfile({
     desc: '用于完善会员资料',
     success: async (res) => {
-
       //存到数据库
-      await wx.cloud.callFunction({
+      const result = await wx.cloud.callFunction({
         name: 'login',
         data: {
           nickName: res.userInfo.nickName,
-          avatarUrl: res.userInfo.avatarUrl
+          avatarUrl: res.userInfo.avatarUrl,
         }
       })
-      // console.log(res.userInfo)
+      // 存到本地
+      const openid = result.result.data.openid
+      res.userInfo.openid = openid
       uni.setStorageSync('userInfo', res.userInfo)
       uni.showToast({ title: '登录成功', icon: 'success' })
       // 登录成功后跳转

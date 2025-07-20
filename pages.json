@@ -43,6 +43,12 @@
 			"style": {
 				"navigationStyle": "custom"
 			}
+		},
+		{
+			"path": "pages/myOrders/index",
+			"style": {
+				"navigationStyle": "custom"
+			}
 		}
 	],
 	// 全局样式配置

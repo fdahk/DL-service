@@ -29,7 +29,7 @@
         <view class="order-item" v-for="item in orderList" :key="item.text">
           <text class="iconfont order-icon" :class="item.icon"></text>
           <text class="order-text">{{ item.text }}</text>
-          <view v-if="item.badge" class="badge">{{ item.badge }}</view>
+          <!-- <view v-if="item.badge" class="badge">{{ item.badge }}</view> --> 
         </view>
       </view>
     </view>
@@ -59,17 +59,19 @@
 </template>
 
 <script setup>
+import { onMounted } from 'vue'
 const defaultAvatar = 'https://img.yzcdn.cn/vant/cat.jpeg'
 const navBarHeight = uni.getWindowInfo().statusBarHeight + 44
 const userInfo = uni.getStorageSync('userInfo')
-
+import { useOrderStore } from '../../store/orderStore'
+const orderStore = useOrderStore()
 
 const orderList = [
   { icon: 'icon-daifukuan', text: '待付款' },
   { icon: 'icon-fenxiang', text: '待分享' },
   { icon: 'icon-caozuo-shijian', text: '待发货' },
-  { icon: 'icon-daishouhuo', text: '待收货', badge: 1 },
-  { icon: 'icon-pingjia', text: '评价', badge: 11 }
+  { icon: 'icon-daishouhuo', text: '待收货'},
+  { icon: 'icon-pingjia', text: '评价'}
 ]
 
 const menuList = [
@@ -81,8 +83,15 @@ const menuList = [
 ]
 
 const goAllOrder = () => {
-  uni.showToast({ title: '跳转全部订单', icon: 'none' })
+  uni.navigateTo({
+    url: '/pages/myOrders/index'
+  })
 }
+onMounted(() => {
+  // 初始化订单数据
+  console.log('user-index onMounted')
+  orderStore.getOrderList()
+})
 </script>
 
 <style lang="scss" scoped>

@@ -228,20 +228,7 @@
 	return [item?.[0], item?.[1]].filter(Boolean)
 	}
 
-	onMounted(() => {
-		// 登录页跳转过来后再鉴定一下
-		const userInfo = uni.getStorageSync('userInfo')
-		if (!userInfo) {
-			// 未登录，跳转到登录页
-			uni.reLaunch({ url: '/pages/login/index' })
-		}		
-		// 固定顶部高度 = 状态栏高度 + 搜索框高度 + tab栏高度 + 间距
-		fixedTopHeight.value = navBarHeight + 88 + 20 + 65 + 10
-		// 初始化数据
-		loadData()
-	})
-
-
+	//点击搜索
 	const handleSearchTap = () => {
 		// 跳转页面，并保留当前页面在页面栈中（可以返回）
 		try {
@@ -253,7 +240,18 @@
 		}
 		
 	}
-
+	onMounted(() => {
+		// 登录页跳转过来后再鉴定一下
+		const userInfo = uni.getStorageSync('userInfo')
+		if (!userInfo) {
+			// 未登录，跳转到登录页
+			uni.reLaunch({ url: '/pages/login/index' })
+		}		
+		// 固定顶部高度 = 状态栏高度 + 搜索框高度 + tab栏高度 + 间距
+		fixedTopHeight.value = navBarHeight + 88 + 20 + 65 + 10
+		// 初始化商品数据
+		loadData()
+	})
 </script>
 
 <style lang="scss" scoped>

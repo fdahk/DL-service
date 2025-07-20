@@ -28,7 +28,7 @@ exports.main = async (event, context) => {
     await db.collection('users').add({ data: userInfo })
   } else {
     userInfo = userRes.data[0]
-    // 可选：同步更新昵称和头像
+    // 同步数据库的用户数据
     if (nickName && avatarUrl && (userInfo.nickName !== nickName || userInfo.avatarUrl !== avatarUrl)) {
       await db.collection('users').doc(userInfo._id).update({
         data: { nickName, avatarUrl }
@@ -41,6 +41,7 @@ exports.main = async (event, context) => {
   return {
     code: 0,
     msg: '登录成功',
-    data: userInfo
+    data: userInfo,
+    openid: openid
   }
 }

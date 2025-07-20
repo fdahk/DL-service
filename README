@@ -27,4 +27,8 @@
             bug：CSS 中的 flex 覆盖了v-show 的 display: none，导致v-show失效
             ps：一般不会出现这个情况的原因：一般不在某组件的根元素上使用flex
         10.flex元素的主轴大小由父元素决定
-        11. activeTab.value = computed() 和 const activeTab = computed()  后者正确
+        11. activeTab.value = computed() 和 const activeTab = computed()  后者正确 
+        12. 滑轨动画方案
+7.20:
+    1.云函数上传失败：本地调试找原因
+    2.小程序不会销毁页面租价

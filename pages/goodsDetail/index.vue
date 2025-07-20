@@ -47,15 +47,15 @@
             <view class="price-bar">
                 <!-- 价格信息 -->
                 <view class="price-info">
-                    <text class="discount">7.6折</text>
-                    <text class="current-price">¥319</text>
-                    <text class="original-price">¥339</text>
-                    <text class="coupon">已优惠20元</text>
+                    <text class="discount">7.5折</text>
+                    <text class="current-price">¥{{ goods.price }}</text>
+                    <text class="original-price">¥{{ (goods.price/0.75).toFixed(2) }}</text>
+                    <text class="coupon">已优惠{{ (goods.price/0.75 - goods.price).toFixed(2) }}元</text>
                 </view>
                 
                 <!-- 月销量信息 -->
                 <view class="sales-info">
-                    <text class="sales-text">月销50.2万件</text>
+                    <text class="sales-text">已售{{ goods.salesCount }}件</text>
                 </view>
             </view>           
 
@@ -96,7 +96,7 @@
             <!-- 右侧购买按钮 -->
             <view class="footer-right">
                 <view class="buy-btn" @tap="handleBuy">
-                    <text class="buy-text">限量价 7.6折¥319</text>
+                    <text class="buy-text">限量价 7.5折¥{{ (goods.price/0.75).toFixed(2) }}</text>
                     <text class="buy-subtitle">即将恢复原价 发起拼单</text>
                 </view>
             </view>
@@ -108,6 +108,8 @@
 import { ref, computed } from 'vue'
 import { useGoodsStore } from '../../store/goodsStore'
 import goodsDesc from '../../components/goodsDesc.vue'
+import { useOrderStore } from '../../store/orderStore'
+const orderStore = useOrderStore()
 // 导入价格组件
 // import priceBar from '../../components/priceBar.vue'
 
@@ -166,34 +168,32 @@ const handleShare = () => {
 // 收藏状态
 const isCollected = ref(false)
 
-// 事件处理
+// 按钮事件处理
+//店铺
 const handleStore = () => {
     // 跳转到店铺页面
-    uni.navigateTo({
-        url: `/pages/store/index?storeId=${goods.value?.storeId}`
-    })
 }
 
+//收藏
 const handleCollect = () => {
-    isCollected.value = !isCollected.value
-    uni.showToast({
-        title: isCollected.value ? '收藏成功' : '取消收藏',
-        icon: 'success'
-    })
+ 
 }
 
+//客服
 const handleCustomerService = () => {
-    // 打开客服对话
-    uni.showToast({
-        title: '客服功能开发中',
-        icon: 'none'
-    })
-}
 
+}
+//购买
 const handleBuy = () => {
     // 购买逻辑
-    uni.navigateTo({
-        url: `/pages/order/confirm?goodsId=${goods.value?.id}`
+    // 添加订单
+    orderStore.addOrder({
+        goods: goods.value,
+        status: '待发货'
+    })
+    uni.showToast({
+        title: '个人小程序无法接入支付功能，点击购买后即视为购买成功',
+        icon: 'none'    
     })
 }
 </script>
