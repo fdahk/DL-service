@@ -49,6 +49,12 @@
 			"style": {
 				"navigationStyle": "custom"
 			}
+		},
+		{
+			"path": "pages/searchRes/index",
+			"style": {
+				"navigationStyle": "custom"
+			}
 		}
 	],
 	// 全局样式配置
